@@ -21,8 +21,12 @@ import google.generativeai as genai
 # 使用環境變量讀取憑證
 secret = os.getenv('ChannelSecret', None)
 token = os.getenv('ChannelAccessToken', None)
-# firebase_url = os.getenv('FIREBASE_URL')
+firebase_url = os.getenv('FIREBASE_URL')
+gemini_key = os.getenv('GOOGLE_GEMINI_API_KEY')
 
+
+# Initialize the Gemini Pro API
+genai.configure(api_key=gemini_key)
 
 handler = WebhookHandler(secret)
 configuration = Configuration(
@@ -42,9 +46,18 @@ def linebot(request):
         user_id = event['source']['userId']
         msg_type = event['message']['type']
 
+        fdb = firebase.FirebaseApplication(firebase_url, None)
+        user_chat_path = f'chat/{user_id}'
+        chat_state_path = f'state/{user_id}'
+        chatgpt = fdb.get(user_chat_path, None)
+
         if msg_type == 'text':
             msg = event['message']['text']
 
+            if chatgpt is None:
+                messages = []
+            else:
+                messages = chatgpt
             with ApiClient(configuration) as api_client:
                 line_bot_api = MessagingApi(api_client)
                 line_bot_api.show_loading_animation(ShowLoadingAnimationRequest(
@@ -52,11 +65,21 @@ def linebot(request):
 
                 if msg == '!清空':
                     reply_msg = '已清空'
-                    # fdb.delete(user_chat_path, None)
+                    fdb.delete(user_chat_path, None)
                 elif msg == '!摘要':
-                    reply_msg = msg # test
+                    model = genai.GenerativeModel('gemini-pro')
+                    response = model.generate_content(
+                        f'Summary the following message in Traditional Chinese by less 5 list points. \n{messages}')
+                    reply_msg = response.text
                 else:
-                    reply_msg = "哈囉你好嗎"
+                    model = genai.GenerativeModel('gemini-pro')
+                    messages.append({'role': 'user', 'parts': [msg]})
+                    response = model.generate_content(messages)
+                    messages.append(
+                        {'role': 'model', 'parts': [response.text]})
+                    reply_msg = response.text
+                    # 更新firebase中的對話紀錄
+                    fdb.put_async(user_chat_path, None, messages)
 
                 line_bot_api.reply_message(
                     ReplyMessageRequest(
@@ -71,7 +94,7 @@ def linebot(request):
                     ReplyMessageRequest(
                         reply_token=reply_token,
                         messages=[
-                            TextMessage(text='你傳的不是文字訊息喔'),
+                            TextMessage(text='你傳的不是文字訊息呦'),
                         ]))
 
     except Exception as e:
