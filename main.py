@@ -49,7 +49,7 @@ def linebot(request):
                     chatId=user_id, loadingSeconds=20))
 
                 model = genai.GenerativeModel('gemini-pro')
-                reply_msg = model.generate_content(msg)
+                reply_msg = model.generate_content(msg).text
 
                 line_bot_api.reply_message(
                     ReplyMessageRequest(
