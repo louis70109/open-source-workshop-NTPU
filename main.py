@@ -9,7 +9,6 @@ from linebot.v3.messaging import (
     TextMessage,
     ShowLoadingAnimationRequest
 )
-import json
 import os
 import requests
 from PIL import Image
