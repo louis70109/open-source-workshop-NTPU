@@ -11,9 +11,6 @@ from linebot.v3.messaging import (
 )
 import json
 import os
-import requests
-from PIL import Image
-from io import BytesIO
 
 
 # 使用環境變量讀取憑證
