@@ -1,6 +1,3 @@
-import logging
-import os
-import json
 from linebot.v3 import WebhookHandler
 from linebot.v3.messaging import (
     Configuration,
@@ -9,16 +6,12 @@ from linebot.v3.messaging import (
     ReplyMessageRequest,
     TextMessage
 )
+import json
+import os
 
-# 使用環境變量讀取憑證
+# 使用环境变量读取凭证
 secret = os.getenv('ChannelSecret', None)
 token = os.getenv('ChannelAccessToken', None)
-# firebase_url = os.getenv('FIREBASE_URL')
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 
 handler = WebhookHandler(secret)
 configuration = Configuration(
@@ -41,15 +34,17 @@ def linebot(request):
 
             if msg_type == 'text':
                 msg = event['message']['text']
+
+                # Assuming show_loading_animation is a valid method for your SDK
                 line_bot_api.show_loading_animation(chat_id=user_id, loading_seconds=20)
 
                 if msg == '!清空':
                     reply_msg = '已清空'
                     # Add functionality to clear data if needed
                 elif msg == '!摘要':
-                    reply_msg = '摘要功能正在開發中'
+                    reply_msg = '摘要功能正在开发中'
                 else:
-                    reply_msg = "哈囉你好嗎"
+                    reply_msg = "哈罗你好吗"
 
                 line_bot_api.reply_message(
                     ReplyMessageRequest(
@@ -62,9 +57,8 @@ def linebot(request):
                     ReplyMessageRequest(
                         reply_token=reply_token,
                         messages=[
-                            TextMessage(text='你傳的不是文字訊息喔'),
+                            TextMessage(text='你传的不是文字消息哦'),
                         ]))
     except Exception as e:
-        detail = e.args[0]
-        logger.error(detail)  # Changed print to logger.error
+        print(f"Error: {e}")
     return 'OK'
