@@ -12,7 +12,7 @@ from linebot.v3.messaging import (
 import json
 import os
 import requests
-from PIL import Image
+#from PIL import Image #程式中並未使用到Image函式庫
 from io import BytesIO
 
 
