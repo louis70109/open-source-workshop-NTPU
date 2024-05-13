@@ -8,6 +8,10 @@ from linebot.v3.messaging import (
 )
 import json
 import os
+import requests
+from PIL import Image
+from io import BytesIO
+import google.generativeai as genai
 
 
 # 使用環境變量讀取憑證
@@ -36,14 +40,8 @@ def linebot(request):
             if msg_type == 'text':
                 msg = event['message']['text']
                 line_bot_api.show_loading_animation(chat_id=user_id, loading_seconds=20)
-
-                if msg == '!清空':
-                    reply_msg = '已清空'
-                    # Add functionality to clear data if needed
-                elif msg == '!摘要':
-                    reply_msg = '摘要功能正在開發中'
-                else:
-                    reply_msg = "哈囉你好嗎"
+                model = genai.GenerativeModel('gemini-pro')
+                reply_msg = model.generate_content(msg).text
 
                 line_bot_api.reply_message(
                     ReplyMessageRequest(
