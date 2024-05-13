@@ -9,7 +9,6 @@ from linebot.v3.messaging import (
 import json
 import os
 
-# 使用环境变量读取凭证
 secret = os.getenv('ChannelSecret', None)
 token = os.getenv('ChannelAccessToken', None)
 
@@ -35,16 +34,14 @@ def linebot(request):
             if msg_type == 'text':
                 msg = event['message']['text']
 
-                # Assuming show_loading_animation is a valid method for your SDK
                 line_bot_api.show_loading_animation(chat_id=user_id, loading_seconds=20)
 
-                if msg == '!清空':
+                if msg == '清空':
                     reply_msg = '已清空'
-                    # Add functionality to clear data if needed
-                elif msg == '!摘要':
-                    reply_msg = '摘要功能正在开发中'
+                elif msg == '摘要':
+                    reply_msg = '摘要功能開發中'
                 else:
-                    reply_msg = "哈罗你好吗"
+                    reply_msg = '哈囉'
 
                 line_bot_api.reply_message(
                     ReplyMessageRequest(
@@ -57,8 +54,8 @@ def linebot(request):
                     ReplyMessageRequest(
                         reply_token=reply_token,
                         messages=[
-                            TextMessage(text='你传的不是文字消息哦'),
+                            TextMessage(text='你傳的不是文字消息哦'),
                         ]))
     except Exception as e:
-        print(f"Error: {e}")
+        print(f'Error: {e}')
     return 'OK'
