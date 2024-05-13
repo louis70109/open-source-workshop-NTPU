@@ -11,17 +11,11 @@ from linebot.v3.messaging import (
 )
 import json
 import os
-import requests
-from PIL import Image
-from io import BytesIO
-from firebase import firebase
-import google.generativeai as genai
 
 
 # 使用環境變量讀取憑證
 secret = os.getenv('ChannelSecret', None)
 token = os.getenv('ChannelAccessToken', None)
-# firebase_url = os.getenv('FIREBASE_URL')
 
 
 handler = WebhookHandler(secret)
@@ -54,7 +48,10 @@ def linebot(request):
                     reply_msg = '已清空'
                     # fdb.delete(user_chat_path, None)
                 elif msg == '!摘要':
-                    reply_msg = msg # test
+                    model = genai.GenerativeModel('gemini-pro')
+                    response = model.generate_content(
+                        f"Please summarize the following message in Traditional Chinese from a basketball player's perspective and in less than 5 list points. \n{messages}")
+                    reply_msg = response.text
                 else:
                     reply_msg = "哈囉你好嗎"
 
