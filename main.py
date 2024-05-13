@@ -14,14 +14,12 @@ import os
 import requests
 from PIL import Image
 from io import BytesIO
-from firebase import firebase
 import google.generativeai as genai
 
 
 # 使用環境變量讀取憑證
 secret = os.getenv('ChannelSecret', None)
 token = os.getenv('ChannelAccessToken', None)
-# firebase_url = os.getenv('FIREBASE_URL')
 
 
 handler = WebhookHandler(secret)
@@ -50,13 +48,8 @@ def linebot(request):
                 line_bot_api.show_loading_animation(ShowLoadingAnimationRequest(
                     chatId=user_id, loadingSeconds=20))
 
-                if msg == '!清空':
-                    reply_msg = '已清空'
-                    # fdb.delete(user_chat_path, None)
-                elif msg == '!摘要':
-                    reply_msg = msg # test
-                else:
-                    reply_msg = "哈囉你好嗎"
+                model = genai.GenerativeModel('gemini-pro')
+                reply_msg = model.generate_content(msg)
 
                 line_bot_api.reply_message(
                     ReplyMessageRequest(
