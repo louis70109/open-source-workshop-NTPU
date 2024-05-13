@@ -18,16 +18,7 @@ from firebase import firebase
 import google.generativeai as genai
 
 
-# 使用環境變量讀取憑證
-secret = os.getenv('ChannelSecret', None)
-token = os.getenv('ChannelAccessToken', None)
-# firebase_url = os.getenv('FIREBASE_URL')
 
-
-handler = WebhookHandler(secret)
-configuration = Configuration(
-    access_token=token
-)
 
 
 def linebot(request):
