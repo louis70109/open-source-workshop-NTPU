@@ -1,36 +1,31 @@
-import logging
-import os
-import json
 from linebot.v3 import WebhookHandler
 from linebot.v3.messaging import (
     Configuration,
     ApiClient,
     MessagingApi,
     ReplyMessageRequest,
-    TextMessage
+    TextMessage,
+    ShowLoadingAnimationRequest
 )
+import json
+import os
 
 # 使用環境變量讀取憑證
-secret = os.getenv('ChannelSecret', None)
-token = os.getenv('ChannelAccessToken', None)
-# firebase_url = os.getenv('FIREBASE_URL')
+CHANNEL_SECRET = os.getenv('ChannelSecret', None)
+CHANNEL_ACCESS_TOKEN = os.getenv('ChannelAccessToken', None)
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-
-handler = WebhookHandler(secret)
+handler = WebhookHandler(CHANNEL_SECRET)
 configuration = Configuration(
-    access_token=token
+    access_token=CHANNEL_ACCESS_TOKEN
 )
 
 def linebot(request):
-    body = request.get_data(as_text=True)
-    json_data = json.loads(body)
     try:
+        body = request.get_data(as_text=True)
+        json_data = json.loads(body)
         signature = request.headers['X-Line-Signature']
         handler.handle(body, signature)
+        
         event = json_data['events'][0]
         reply_token = event['replyToken']
         user_id = event['source']['userId']
@@ -38,16 +33,17 @@ def linebot(request):
 
         with ApiClient(configuration) as api_client:
             line_bot_api = MessagingApi(api_client)
-
+            
             if msg_type == 'text':
                 msg = event['message']['text']
-                line_bot_api.show_loading_animation(chat_id=user_id, loading_seconds=20)
+                line_bot_api.show_loading_animation(ShowLoadingAnimationRequest(
+                    chatId=user_id, loadingSeconds=20))
 
                 if msg == '!清空':
                     reply_msg = '已清空'
-                    # Add functionality to clear data if needed
+                    # fdb.delete(user_chat_path, None)
                 elif msg == '!摘要':
-                    reply_msg = '摘要功能正在開發中'
+                    reply_msg = msg # test
                 else:
                     reply_msg = "哈囉你好嗎"
 
@@ -56,15 +52,21 @@ def linebot(request):
                         reply_token=reply_token,
                         messages=[
                             TextMessage(text=reply_msg),
-                        ]))
+                        ]
+                    )
+                )
             else:
                 line_bot_api.reply_message(
                     ReplyMessageRequest(
                         reply_token=reply_token,
                         messages=[
                             TextMessage(text='你傳的不是文字訊息喔'),
-                        ]))
+                        ]
+                    )
+                )
+        return 'OK'
+    
     except Exception as e:
-        detail = e.args[0]
-        logger.error(detail)  # Changed print to logger.error
-    return 'OK'
+        # 記錄錯誤詳情
+        print(f"An error occurred: {e}")
+        return 'Error'
